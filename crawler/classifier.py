@@ -3,15 +3,15 @@ from sklearn.pipeline import Pipeline
 from fcutils import textsFromFilenames
 
 class Classifier(object):
-        
+
     def __init__(self):
-        self.vectorizer = CountVectorizer(charset_error="ignore")
+        self.vectorizer = CountVectorizer()
         self.transformer = TfidfTransformer() # idf by default
         self.classifierModel = None # set by child class
 
         self.pipeline = None
 
-        
+
     def trainClassifierFromNames(self, docNames, labels):
         """ Takes a list of document filenames and a list of labels,
         with each label an integer
@@ -27,7 +27,7 @@ class Classifier(object):
                                   ('trans', self.transformer),
                                   ('clf', self.classifierModel)])
         self.pipeline.fit(docTexts, labels)
-                
+
     def predictFromNames(self, docNames):
         """ After being trained, takes a list of document filenames
         and returns the list of predicted labels """
@@ -37,7 +37,7 @@ class Classifier(object):
         """ After being trained, takes a list of document texts
         and returns the list of predicted labels """
         return self.pipeline.predict(docTexts)
-            
+
     def calculate_score(self, docText):
         """ Takes a single document text and returns its predicted label """
         predicted = self.pipeline.predict([docText])

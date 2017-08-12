@@ -4,10 +4,10 @@ class FCConfig(object):
     """ Parses a .ini configuration file
     This parser disregards sections, meaning option names are unique
     >>> fcc = FCConfig("config.ini")
-    >>> fcc["docsFile"]
+    >>> fcc["docsFileDir"]
     "specific_doc_file.txt"
     """
-    
+
     def __init__(self, configFName):
         self.confPar = ConfigParser()
         self.confPar.read(configFName)
@@ -21,7 +21,7 @@ class FCConfig(object):
         #   for option in self.configParser.options(section):
         #       self.configDict[option] = self.configParser.get(section, option)
         self.readConfigHelper("Files", "seedFile")
-        self.readConfigHelper("Files", "docsFile")
+        self.readConfigHelper("Files", "docsFileDir")
         self.readConfigHelper("Files", "labelFile")
 
         self.readConfigHelper("VSM Filtering", "VSMFilterModel")
@@ -33,7 +33,7 @@ class FCConfig(object):
         self.readConfigHelper("Classifier", "classifier")
         self.readConfigHelper("Classifier", "trainDocNum", "int")
         self.readConfigHelper("Classifier", "allowAdaptive", "boolean")
-        
+
         self.readConfigHelper("Crawling", "threshold", "float")
         self.readConfigHelper("Crawling", "pageLimit", "int")
 
@@ -48,14 +48,14 @@ class FCConfig(object):
         elif dataType.lower() == "int":
             self.confDict[opt] = self.confPar.getint(sect, opt)
         self.options.add(opt)
-                
+
 
     def __getitem__(self, key):
         return self.confDict[key]
 
     def getOptions(self):
         return self.options
-    
+
 
 if __name__ == "__main__":
     fc = FCConfig("config.ini")

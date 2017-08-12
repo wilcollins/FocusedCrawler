@@ -9,18 +9,25 @@ from SVMClassifier import SVMClassifier
 from NBClassifier import NaiveBayesClassifier
 from priorityQueue import PriorityQueue
 
+import os
+from glob import glob
+
 
 def main():
     conf = FCConfig("config.ini")
 
     seedUrls = linesFromFile(conf["seedFile"])
-    repositoryDocNames = linesFromFile(conf["docsFile"])
+
+    ## TODO : get names from dir
+    docDirPath = conf["docsFileDir"]
+    docDirPath = os.path.abspath(docDirPath)
+    repositoryDocNames = [y for x in os.walk(docDirPath) for y in glob(os.path.join(x[0], '*.html'))]
 
     if conf["labelFile"]:
         print "Using labels"
         labels = intLinesFromFile(conf["labelFile"])
         relevantDocs = [doc for doc,lab in zip(repositoryDocNames, labels) if lab==1]
-        irrelevantDocs = [doc for doc,lab in zip(repositoryDocNames, labels) if lab==0]     
+        irrelevantDocs = [doc for doc,lab in zip(repositoryDocNames, labels) if lab==0]
     else:
         # use VSM model to label training docs
         vsmModel = None
@@ -29,16 +36,16 @@ def main():
         elif conf["VSMFilterModel"].lower() == "lsi":
             vsmModel = LSIScorer(getUrlTexts(seedUrls))
         print "constructed vsm model"
-    
+
         relevantDocs , irrelevantDocs = vsmModel.labelDocs(
             repositoryDocNames, conf["minRepositoryDocNum"],
             conf["filterIrrelevantThreshold"],
             conf["filterRelevantThreshold"])
-        
+
     print len(relevantDocs), len(irrelevantDocs)
-    
-    
-    
+
+
+
     # Train classifier
     classifier = None
     testSize = min(len(relevantDocs), len(irrelevantDocs))
@@ -54,7 +61,7 @@ def main():
     classifier.trainClassifierFromNames(trainDocs, trainLabels)
 
     print "Training complete"
-    
+
     # Test classifier
     testSize = min(len(relevantDocs), len(irrelevantDocs))
     testDocs = relevantDocs[:testSize] + irrelevantDocs[:testSize]
