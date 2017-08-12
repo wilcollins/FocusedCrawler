@@ -1,6 +1,6 @@
 from sklearn.feature_extraction.text import CountVectorizer, TfidfTransformer
 from sklearn.pipeline import Pipeline
-from fcutils import textsFromFilenames
+from utils import textsFromFilenames
 
 class Classifier(object):
 

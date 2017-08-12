@@ -1,6 +1,6 @@
 from gensim import corpora, models, similarities
 from scorer import Scorer
-from fcutils import tokenizeDocText
+from utils import tokenizeDocText
 
 class LSIScorer(Scorer):
  

@@ -1,9 +1,9 @@
 from ConfigParser import ConfigParser
 
-class FCConfig(object):
+class Config(object):
     """ Parses a .ini configuration file
     This parser disregards sections, meaning option names are unique
-    >>> fcc = FCConfig("config.ini")
+    >>> fcc = Config("config.ini")
     >>> fcc["docsFileDir"]
     "specific_doc_file.txt"
     """
@@ -59,6 +59,6 @@ class FCConfig(object):
 
 
 if __name__ == "__main__":
-    fc = FCConfig("config.ini")
+    fc = Config("config.ini")
     print fc.confDict
     print fc.getOptions()

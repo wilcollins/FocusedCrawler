@@ -1,4 +1,3 @@
-
 import nltk
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize.regexp import WordPunctTokenizer

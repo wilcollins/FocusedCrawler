@@ -2,8 +2,8 @@
 import numpy as np
 
 from crawler import Crawler
-from fcconfig import FCConfig
-from fcutils import linesFromFile, getUrlTexts, intLinesFromFile
+from config import Config
+from utils import linesFromFile, getUrlTexts, intLinesFromFile
 from tfidfscorer import TfidfScorer
 from lsiscorer import LSIScorer
 from SVMClassifier import SVMClassifier
@@ -31,12 +31,18 @@ def main():
 class FocusedCrawler:
 
     def init_config(self):
-        conf = FCConfig("config.ini")
+        conf = Config("config.ini")
         self.pageLimit = conf["pageLimit"]
         self.linkLimit = conf["linkLimit"]
         self.relevantThreshold = conf["relevantThreshold"]
         self.trainSize = conf["trainDocNum"]
-        self.classifierString = conf["classifier"]
+
+        classifierString = conf["classifier"]
+        self.classifier = None
+        if "NB" in classifierString.upper():
+            self.classifier = NaiveBayesClassifier()
+        elif "SVM" in classifierString.upper():
+            self.classifier = SVMClassifier()
 
         self.seedUrls = linesFromFile(conf["seedFile"])
 
@@ -93,16 +99,11 @@ class FocusedCrawler:
             self.vsm["filterRelevantThreshold"])
 
     def train_classifier(self):
-        self.classifier = None
         if (self.trainSize > self.testSize):
             raise Exception("Training size ({}) is larger than test size ({})".format(self.trainSize, self.testSize))
 
         trainDocs = self.relevantDocs[:self.trainSize] + self.irrelevantDocs[:self.trainSize]
         trainLabels = [1]*self.trainSize + [0]*self.trainSize
-        if self.classifierString.upper() == "NB":
-            self.classifier = NaiveBayesClassifier()
-        elif self.classifierString.upper() == "SVM":
-            self.classifier = SVMClassifier()
         self.classifier.trainClassifierFromNames(trainDocs, trainLabels)
         print "Training complete"
 

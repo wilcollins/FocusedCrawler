@@ -32,11 +32,11 @@ this project crawls the internet and collects webpages related to a given topic,
 ### config.ini
 -	Configuration file for focused crawler in INI format
 
-### fcconfig.py
+### config.py
 -	Class responsible for reading configuration file, using ConfigParser
 -	Adds all configuration options to its internal dictionary (e.g. config[“seedFile”])
 
-### fcutils.py
+### utils.py
 -	Contains various utility functions relating to reading files and sanitizing/tokenizing text
 
 ### seeds.txt

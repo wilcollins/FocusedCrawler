@@ -1,6 +1,6 @@
 import nltk
 import codecs
-from fcutils import tokenizeDocText
+from utils import tokenizeDocText
 
 class Scorer(object):
     """ Base class for VSM scorers """
