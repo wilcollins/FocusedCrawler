@@ -39,11 +39,6 @@
 -	Contains local files to act as training/testing set for the classifier (“repository docs”)
 -	Default name, but can be changed in configuration
 
-### labels.txt
--	1-to-1 correspondence with lines of repository, assigning numerical categorical label
--	1 for relevant, 0 for irrelevant
--	Optional
-
 ### seeds.txt
 -	Contains URLs to relevant pages for focused crawler to start
 -	Default name, but can be modified in config.ini

@@ -15,20 +15,12 @@ from glob import glob
 
 def main():
     conf = FCConfig("config.ini")
-
     seedUrls = linesFromFile(conf["seedFile"])
-
-    ## TODO : get names from dir
     docDirPath = conf["docsFileDir"]
     docDirPath = os.path.abspath(docDirPath)
     repositoryDocNames = [y for x in os.walk(docDirPath) for y in glob(os.path.join(x[0], '*.html'))]
 
-    if conf["labelFile"]:
-        print "Using labels"
-        labels = intLinesFromFile(conf["labelFile"])
-        relevantDocs = [doc for doc,lab in zip(repositoryDocNames, labels) if lab==1]
-        irrelevantDocs = [doc for doc,lab in zip(repositoryDocNames, labels) if lab==0]
-    else:
+    if conf["useVSM"]:
         # use VSM model to label training docs
         vsmModel = None
         if conf["VSMFilterModel"].lower() == "tf-idf":
@@ -41,17 +33,22 @@ def main():
             repositoryDocNames, conf["minRepositoryDocNum"],
             conf["filterIrrelevantThreshold"],
             conf["filterRelevantThreshold"])
-
-    print len(relevantDocs), len(irrelevantDocs)
-
-
+    else:
+        print "Using labels provided by filepath, ie. ./html_files/relevant && ./html_files/irrelevant"
+        for filepath in repositoryDocNames:
+            print filepath
+        irrelevantDocs = [filepath for filepath in repositoryDocNames if "irrelevant" in filepath]
+        relevantDocs = list(set(repositoryDocNames) - set(irrelevantDocs))
+        print "Found {} relevantDocs & {} irrelevantDocs".format(len(relevantDocs), len(irrelevantDocs))
 
     # Train classifier
     classifier = None
     testSize = min(len(relevantDocs), len(irrelevantDocs))
     trainSize = conf["trainDocNum"]
     if (trainSize > testSize):
-        raise Exception("Training size is larger than test size")
+        raise Exception("Training size ({}) is larger than test size ({})".format(trainSize, testSize))
+
+
     trainDocs = relevantDocs[:trainSize] + irrelevantDocs[:trainSize]
     trainLabels = [1]*trainSize + [0]*trainSize
     if conf["classifier"].upper() == "NB":
