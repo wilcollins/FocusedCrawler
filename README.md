@@ -1,3 +1,7 @@
+# Focused Crawler
+Originally designed as part of Virginia Tech's Crisis & Tragedy Recovery Network (CTRnet),
+this project crawls the internet and collects webpages related to a given topic, often for archival purposes.
+
 ### FocusedCrawler.py
 - Driver class for this project
 - Responsible for creating configuration and classifier object and calling crawler
