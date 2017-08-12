@@ -2,8 +2,12 @@ from bs4 import BeautifulSoup,Comment
 from urllib import FancyURLopener
 import tempfile
 
+from fake_useragent import UserAgent
+ua = UserAgent()
+ua_string = ua.google
+
 class MyOpener(FancyURLopener):
-    version = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'
+    version = ua_string
 
 class Webpage:
     def __init__(self):
