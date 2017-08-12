@@ -21,7 +21,7 @@ class FCConfig(object):
         #   for option in self.configParser.options(section):
         #       self.configDict[option] = self.configParser.get(section, option)
         self.readConfigHelper("Files", "seedFile")
-        self.readConfigHelper("Files", "docsFileDir")
+        self.readConfigHelper("Files", "trainingDocs")
         self.readConfigHelper("Model", "useVSM", "boolean")
 
         self.readConfigHelper("VSM Filtering", "VSMFilterModel")

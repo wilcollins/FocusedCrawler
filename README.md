@@ -39,10 +39,6 @@ this project crawls the internet and collects webpages related to a given topic,
 ### fcutils.py
 -	Contains various utility functions relating to reading files and sanitizing/tokenizing text
 
-### html_files directory
--	Contains local files to act as training/testing set for the classifier (“repository docs”)
--	Default name, but can be changed in configuration
-
 ### seeds.txt
 -	Contains URLs to relevant pages for focused crawler to start
 -	Default name, but can be modified in config.ini

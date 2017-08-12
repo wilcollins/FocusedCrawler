@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup,Comment
 from urllib import FancyURLopener
+import tempfile
 
 class MyOpener(FancyURLopener):
     version = 'Mozilla/5.0 (Windows; U; Windows NT 5.1; it; rv:1.8.1.11) Gecko/20071127 Firefox/2.0.0.11'
@@ -14,19 +15,28 @@ class Webpage:
         self.pageUrl = url
         myopener = MyOpener()
         page = myopener.open(url)
-        soup = BeautifulSoup(page, "html.parser")
+        self.soup = BeautifulSoup(page, "html.parser")
 
         self.outgoingUrls = []
-        for link in soup.find_all('a', href=True):
+        for link in self.soup.find_all('a', href=True):
             url = link['href']
-            self.outgoingUrls.append(url) 
+            self.outgoingUrls.append(url)
 
         self.title = ""
-        if soup.title:
-            self.title = soup.title.string
-        text_nodes = soup.findAll(text=True)
+        if self.soup.title:
+            self.title = self.soup.title.string
+        text_nodes = self.soup.findAll(text=True)
         visible_text = filter(visible, text_nodes)
         self.text = ''.join(visible_text)
+
+    def save_tmp(self):
+        file = tempfile.NamedTemporaryFile(delete=False)
+        self.save(file.name)
+        return file.name
+
+    def save(self, path):
+        with open(path, "w") as file:
+            file.write(str(self.soup))
 
 def visible(element):
     if element.parent.name in ['style', 'script', '[document]', 'head']:

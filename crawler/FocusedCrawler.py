@@ -9,6 +9,7 @@ from lsiscorer import LSIScorer
 from SVMClassifier import SVMClassifier
 from NBClassifier import NaiveBayesClassifier
 from priorityQueue import PriorityQueue
+from webpage import Webpage
 
 import os
 from glob import glob
@@ -25,21 +26,28 @@ def main():
     fc.stat_analysis()
 
     fc.crawl()
+    fc.cleanup_tmp_html_files()
 
 class FocusedCrawler:
 
     def init_config(self):
         conf = FCConfig("config.ini")
-        self.seedUrls = linesFromFile(conf["seedFile"])
-        self.docDirPath = conf["docsFileDir"]
-        self.docDirPath = os.path.abspath(self.docDirPath)
-        self.repositoryDocNames = [y for x in os.walk(self.docDirPath) for y in glob(os.path.join(x[0], '*.html'))]
-
         self.pageLimit = conf["pageLimit"]
         self.linkLimit = conf["linkLimit"]
         self.relevantThreshold = conf["relevantThreshold"]
         self.trainSize = conf["trainDocNum"]
         self.classifierString = conf["classifier"]
+
+        self.seedUrls = linesFromFile(conf["seedFile"])
+
+        self.trainingDocsPath = conf["trainingDocs"]
+        self.trainingDocsPath = os.path.abspath(self.trainingDocsPath)
+        self.labeled = {}
+        self.labeled["relevantPath"] = os.path.join(self.trainingDocsPath, "relevant.txt");
+        self.labeled["irrelevantPath"] = os.path.join(self.trainingDocsPath, "irrelevant.txt");
+        self.labeled["relevantUrls"] = linesFromFile(self.labeled["relevantPath"]);
+        self.labeled["irrelevantUrls"] = linesFromFile(self.labeled["irrelevantPath"]);
+
         self.vsm = {
             "on": conf["useVSM"],
             "filterModel": conf["VSMFilterModel"],
@@ -56,11 +64,13 @@ class FocusedCrawler:
         self.testSize = min(len(self.relevantDocs), len(self.irrelevantDocs))
 
     def setup_labeled_model(self):
-        print "Using labels provided by filepath, ie. ./html_files/relevant && ./html_files/irrelevant"
-        for filepath in self.repositoryDocNames:
+        print "Using labels provided by relevant.txt & irrelevant.txt"
+        self.irrelevantDocs = [Webpage(url).save_tmp() for url in self.labeled["irrelevantUrls"] ]
+        self.relevantDocs = [Webpage(url).save_tmp() for url in self.labeled["relevantUrls"] ]
+        for filepath in self.irrelevantDocs:
             print filepath
-        self.irrelevantDocs = [filepath for filepath in self.repositoryDocNames if "irrelevant" in filepath]
-        self.relevantDocs = list(set(self.repositoryDocNames) - set(self.irrelevantDocs))
+        for filepath in self.relevantDocs:
+            print filepath
         print "Found {} relevantDocs & {} irrelevantDocs".format(len(self.relevantDocs), len(self.irrelevantDocs))
 
     def setup_vsm_model(self):
@@ -134,6 +144,10 @@ class FocusedCrawler:
 
         print crawler.relevantPages
         print len(crawler.relevantPages) / len(crawler.visited)
+
+    def cleanup_tmp_html_files(self):
+        for filepath in self.relevantDocs + self.irrelevantDocs:
+            os.remove(filepath)
 
 if __name__ == "__main__":
     x = main()
