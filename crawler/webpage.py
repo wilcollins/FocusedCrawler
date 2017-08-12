@@ -14,8 +14,13 @@ class Webpage:
         self.pageUrl = url
         myopener = MyOpener()
         page = myopener.open(url)
-        soup = BeautifulSoup(page)
-        
+        soup = BeautifulSoup(page, "html.parser")
+
+        self.outgoingUrls = []
+        for link in soup.find_all('a', href=True):
+            url = link['href']
+            self.outgoingUrls.append(url) 
+
         self.title = ""
         if soup.title:
             self.title = soup.title.string

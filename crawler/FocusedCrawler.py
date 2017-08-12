@@ -1,6 +1,7 @@
 #!/usr/local/bin/python
 import numpy as np
 
+from crawler import Crawler
 from fcconfig import FCConfig
 from fcutils import linesFromFile, getUrlTexts, intLinesFromFile
 from tfidfscorer import TfidfScorer
@@ -19,6 +20,10 @@ def main():
     docDirPath = conf["docsFileDir"]
     docDirPath = os.path.abspath(docDirPath)
     repositoryDocNames = [y for x in os.walk(docDirPath) for y in glob(os.path.join(x[0], '*.html'))]
+
+    pageLimit = conf["pageLimit"]
+    linkLimit = conf["linkLimit"]
+    relevantThreshold = conf["relevantThreshold"]
 
     if conf["useVSM"]:
         # use VSM model to label training docs
@@ -85,13 +90,13 @@ def main():
     print relevantRecall, relevantPrecision
 
 
-    [(-1,p) for p in seedUrls]
+    t = [(-1,p) for p in seedUrls]
     priorityQueue = PriorityQueue(t)
-    crawler = Crawler(priorityQueue,classifier,10)
+    crawler = Crawler(priorityQueue, classifier, pageLimit, linkLimit, relevantThreshold)
     crawler.crawl()
-    print crawler.relevantPagesCount
 
-    print crawler.pagesCount
+    print crawler.relevantPages
+    print len(crawler.relevantPages) / len(crawler.visited)
 
 
 if __name__ == "__main__":
