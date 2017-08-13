@@ -165,3 +165,7 @@ pip-log.txt
 # Ignore all custom configs, but keep example config
 /crawler/config/*
 !/crawler/config/example
+
+
+# Node.js
+**/node_modules/*
