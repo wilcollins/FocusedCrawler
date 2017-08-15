@@ -32,7 +32,6 @@ class Config(object):
         self.readConfigHelper("VSM Filtering", "numFilterTopics", "int")
 
         self.readConfigHelper("Classifier", "classifier")
-        self.readConfigHelper("Classifier", "trainDocNum", "int")
         self.readConfigHelper("Classifier", "allowAdaptive", "boolean")
 
         self.readConfigHelper("Crawling", "pageLimit", "int")

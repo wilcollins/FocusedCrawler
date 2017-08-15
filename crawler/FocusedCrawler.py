@@ -20,10 +20,9 @@ def main():
     fc.init_config()
     fc.setup_model()
     fc.train_classifier()
-    fc.test_classifier()
 
     # Statistical analysis (recall and precision)
-    fc.stat_analysis()
+    # fc.stat_analysis()
 
     fc.crawl()
     fc.cleanup_tmp_html_files()
@@ -73,10 +72,6 @@ class FocusedCrawler:
         print "Using labels provided by relevant.txt & irrelevant.txt"
         self.irrelevantDocs = [Webpage(url).save_tmp() for url in self.labeled["irrelevantUrls"] ]
         self.relevantDocs = [Webpage(url).save_tmp() for url in self.labeled["relevantUrls"] ]
-        for filepath in self.irrelevantDocs:
-            print filepath
-        for filepath in self.relevantDocs:
-            print filepath
         print "Found {} relevantDocs & {} irrelevantDocs".format(len(self.relevantDocs), len(self.irrelevantDocs))
 
     def setup_vsm_model(self):
@@ -99,21 +94,18 @@ class FocusedCrawler:
             self.vsm["filterRelevantThreshold"])
 
     def train_classifier(self):
-        if (self.trainSize > self.testSize):
-            raise Exception("Training size ({}) is larger than test size ({})".format(self.trainSize, self.testSize))
-
-        trainDocs = self.relevantDocs[:self.trainSize] + self.irrelevantDocs[:self.trainSize]
-        trainLabels = [1]*self.trainSize + [0]*self.trainSize
+        print "Training classifier"
+        trainDocs = self.relevantDocs + self.irrelevantDocs
+        trainLabels = [1]*len(self.relevantDocs) + [0]*len(self.irrelevantDocs)
         self.classifier.trainClassifierFromNames(trainDocs, trainLabels)
         print "Training complete"
 
-    def test_classifier(self):
+    # Statistical analysis (recall and precision)
+    def stat_analysis(self):
         testDocs = self.relevantDocs[:self.testSize] + self.irrelevantDocs[:self.testSize]
         testLabels = [1]*self.testSize + [0]*self.testSize
         self.predictedLabels = list(self.classifier.predictFromNames(testDocs))
 
-    # Statistical analysis (recall and precision)
-    def stat_analysis(self):
         allRelevant = self.testSize
         allIrrelevant = self.testSize
         self.predictedRelevant = self.predictedLabels.count(1)

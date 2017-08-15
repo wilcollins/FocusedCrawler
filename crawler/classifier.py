@@ -8,7 +8,6 @@ class Classifier(object):
         self.vectorizer = CountVectorizer()
         self.transformer = TfidfTransformer() # idf by default
         self.classifierModel = None # set by child class
-
         self.pipeline = None
 
 
