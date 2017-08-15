@@ -6,6 +6,8 @@ from fake_useragent import UserAgent
 ua = UserAgent()
 ua_string = ua.google
 
+import urlparse
+
 class MyOpener(FancyURLopener):
     version = ua_string
 
@@ -14,24 +16,35 @@ class Webpage:
         self.pageUrl = ""
         self.title = ""
         self.text = ""
+        self.outgoingUrls = []
 
     def __init__(self,url):
         self.pageUrl = url
-        myopener = MyOpener()
-        page = myopener.open(url)
-        self.soup = BeautifulSoup(page, "html.parser")
-
+        self.root_url = urlparse.urljoin(url, '/').strip("/")
         self.outgoingUrls = []
-        for link in self.soup.find_all('a', href=True):
-            url = link['href']
-            self.outgoingUrls.append(url)
+        myopener = MyOpener()
+        try:
+            page = myopener.open(url)
+            self.soup = BeautifulSoup(page, "html.parser")
+            self.outgoingUrls = self.get_outgoing_urls()
+            self.title = ""
+            if self.soup.title:
+                self.title = self.soup.title.string
+            text_nodes = self.soup.findAll(text=True)
+            visible_text = filter(visible, text_nodes)
+            self.text = ''.join(visible_text)
+        except Exception, e:
+            print e
 
-        self.title = ""
-        if self.soup.title:
-            self.title = self.soup.title.string
-        text_nodes = self.soup.findAll(text=True)
-        visible_text = filter(visible, text_nodes)
-        self.text = ''.join(visible_text)
+    def get_outgoing_urls(self):
+        if self.outgoingUrls == []:
+            for link in self.soup.find_all('a', href=True):
+                if link.has_attr('href'):
+                    url = link['href']
+                    if url.startswith('/'):
+                        url = self.root_url + url
+                    self.outgoingUrls.append(url)
+        return self.outgoingUrls
 
     def save_tmp(self):
         file = tempfile.NamedTemporaryFile(delete=False)
