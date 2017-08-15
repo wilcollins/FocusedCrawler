@@ -1,6 +1,7 @@
 bs4==0.0.1
 fake-useragent==0.1.7
 gensim==2.3.0
+google==1.9.2
 nltk==3.2.4
 numpy==1.13.1
 sklearn==0.0

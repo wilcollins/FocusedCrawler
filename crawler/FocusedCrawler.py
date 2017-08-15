@@ -10,6 +10,8 @@ from SVMClassifier import SVMClassifier
 from NBClassifier import NaiveBayesClassifier
 from priorityQueue import PriorityQueue
 from webpage import Webpage
+import google
+import itertools
 
 import os
 from glob import glob
@@ -42,7 +44,20 @@ class FocusedCrawler:
         elif "SVM" in classifierString.upper():
             self.classifier = SVMClassifier()
 
-        self.seedUrls = linesFromFile(conf["seedFile"])
+        seedKeywords = linesFromFile(conf["seedFile"])
+        self.seedUrls = []
+        urlsPerSeed = 10
+        for keyword in seedKeywords:
+            if "http" in keyword:
+                self.seedUrls.append(keyword)
+            else:
+                seedUrlGenerator = google.search(keyword)
+                searchResultUrls = list(itertools.islice(seedUrlGenerator, 0, urlsPerSeed))
+                self.seedUrls = list(set(self.seedUrls) | set(searchResultUrls))
+
+        print "seed urls: "
+        print self.seedUrls
+
         self.blacklistDomains = linesFromFile(conf["blacklistFile"])
 
         self.trainingDocsPath = conf["trainingDocs"]
