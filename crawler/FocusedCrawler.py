@@ -35,7 +35,6 @@ class FocusedCrawler:
         self.pageLimit = conf["pageLimit"]
         self.linkLimit = conf["linkLimit"]
         self.relevantThreshold = conf["relevantThreshold"]
-        self.trainSize = conf["trainDocNum"]
 
         classifierString = conf["classifier"]
         self.classifier = None
@@ -45,6 +44,7 @@ class FocusedCrawler:
             self.classifier = SVMClassifier()
 
         self.seedUrls = linesFromFile(conf["seedFile"])
+        self.blacklistDomains = linesFromFile(conf["blacklistFile"])
 
         self.trainingDocsPath = conf["trainingDocs"]
         self.trainingDocsPath = os.path.abspath(self.trainingDocsPath)
@@ -140,7 +140,8 @@ class FocusedCrawler:
             self.classifier,
             self.pageLimit,
             self.linkLimit,
-            self.relevantThreshold)
+            self.relevantThreshold,
+            self.blacklistDomains)
         crawler.crawl()
 
         print crawler.relevantPages

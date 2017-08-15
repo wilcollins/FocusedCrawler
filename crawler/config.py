@@ -21,6 +21,7 @@ class Config(object):
         #   for option in self.configParser.options(section):
         #       self.configDict[option] = self.configParser.get(section, option)
         self.readConfigHelper("Files", "seedFile")
+        self.readConfigHelper("Files", "blacklistFile")
         self.readConfigHelper("Files", "trainingDocs")
         self.readConfigHelper("Model", "useVSM", "boolean")
 

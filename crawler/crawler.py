@@ -2,8 +2,9 @@ from bs4 import BeautifulSoup
 from webpage import Webpage
 
 class Crawler:
-    def __init__(self, priorityQueue, scorer, pageLimit, linkLimit, relevantThreshold):
+    def __init__(self, priorityQueue, scorer, pageLimit, linkLimit, relevantThreshold, blacklistDomains):
         self.visited = []
+        self.irrelevantUrls = []
         self.relevantPages=[]
         self.totalPagesCount = len(priorityQueue.queue)
         self.priorityQueue = priorityQueue
@@ -11,6 +12,7 @@ class Crawler:
         self.pageLimit = pageLimit
         self.linkLimit = linkLimit
         self.relevantThreshold = relevantThreshold
+        self.blacklistDomains = blacklistDomains
 
     def pageCount(self):
         return len(self.visited)
@@ -35,23 +37,27 @@ class Crawler:
                 linked_url_count = 0
                 for linked_url in page.outgoingUrls:
                     if linked_url != None and linked_url != '':
-                        if linked_url.find('?')!= -1:
-                            linked_url = linked_url.split('?')[0]
-                        if linked_url not in self.visited:
-                            if linked_url.startswith('http:') and linked_url.find('#') == -1 and not self.exists(linked_url,self.priorityQueue.queue):
-                                linked_url_count += 1
-                                print "Checking link #{} {}".format(linked_url_count, linked_url)
-                                linked_page = Webpage(linked_url)
-                                linked_url_score = self.scorer.calculate_score(linked_page.text)
-                                self.totalPagesCount +=1
-                                tot_score = (page_score + linked_url_score)/2.0
-                                if tot_score > self.relevantThreshold:
-                                    print "Relevant link found. Score ({}) URL ({})".format(tot_score, linked_url)
-                                    self.priorityQueue.push(((-1 * tot_score),linked_url))
+                        if not self.is_blacklisted(linked_url):
+                            # if linked_url.find('?')!= -1:
+                            #     linked_url = linked_url.split('?')[0]
+                            if linked_url not in self.visited and linked_url not in self.irrelevantUrls:
+                                if linked_url.startswith('http') and not self.exists(linked_url,self.priorityQueue.queue):
+                                    linked_url_count += 1
+                                    print "Checking link #{} {}".format(linked_url_count, linked_url)
+                                    linked_page = Webpage(linked_url)
+                                    if hasattr(linked_page, "text"):  # webpage was parseable
+                                        linked_url_score = self.scorer.calculate_score(linked_page.text)
+                                        self.totalPagesCount +=1
+                                        tot_score = (page_score + linked_url_score)/2.0
+                                        if tot_score > self.relevantThreshold:
+                                            print "Relevant link found. Score ({}) URL ({})".format(tot_score, linked_url)
+                                            self.priorityQueue.push(((-1 * tot_score),linked_url))
+                                        else:
+                                            self.irrelevantUrls.append(linked_url)
 
-                                if self.linkLimit > 0 and linked_url_count >= self.linkLimit:
-                                    print "Done crawling page. Reached linkLimit."
-                                    break
+                                        if self.linkLimit > 0 and linked_url_count >= self.linkLimit:
+                                            print "Done crawling page. Reached linkLimit."
+                                            break
 
         if self.pageCount() >=  self.pageLimit:
             print "Done crawling. Reached pageLimit."
@@ -59,6 +65,11 @@ class Crawler:
             print "Done crawling. No more pages to crawl."
 
 
+    def is_blacklisted(self, url):
+        for domain in self.blacklistDomains:
+            if domain in url:
+                return True
+        return False
 
     def exists(self,url,alist):
         urlList = [v for p,v in alist]
