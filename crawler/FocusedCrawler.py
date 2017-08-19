@@ -14,8 +14,8 @@ import google
 import itertools
 
 import os
+import sys
 from glob import glob
-
 
 def main():
     fc = FocusedCrawler()
@@ -31,7 +31,57 @@ def main():
 
 class FocusedCrawler:
 
+    def init_command_line_config(self):
+        print "using command line argparser"
+        from argparser import argdict
+        conf = argdict
+        self.pageLimit = conf["page_limit"]
+        self.linkLimit = conf["link_limit"]
+        self.relevantThreshold = conf["relevancy_threshold"]
+
+        classifierString = conf["classifier"]
+        self.classifier = None
+        if "NB" in classifierString.upper():
+            self.classifier = NaiveBayesClassifier()
+        elif "SVM" in classifierString.upper():
+            self.classifier = SVMClassifier()
+
+        seeds = conf["seeds"]
+        self.seedUrls = []
+        urlsPerSeed = 10
+        for keyword in seeds:
+            if keyword is not "":
+                if "http" in keyword:
+                    self.seedUrls.append(keyword)
+                else:
+                    seedUrlGenerator = google.search(keyword)
+                    searchResultUrls = list(itertools.islice(seedUrlGenerator, 0, urlsPerSeed))
+                    self.seedUrls = list(set(self.seedUrls) | set(searchResultUrls))
+
+        print "seed urls: "
+        print self.seedUrls
+
+        self.blacklistDomains = conf["blacklist_domains"]
+        self.labeled = {}
+        self.labeled["relevantUrls"] = conf["relevant_urls"]
+        self.labeled["irrelevantUrls"] = conf["relevant_urls"]
+
+        self.vsm = {
+            "on": conf["vsm"],
+            "filterModel": conf["vsm_filter"],
+            "minRepositoryDocNum": conf["min_repo_doc_num"],
+            "filterIrrelevantThreshold": conf["irrelevancy_threshold"],
+            "filterRelevantThreshold": conf["relevancy_threshold"]
+        }
+
     def init_config(self):
+        if len(sys.argv) > 1:
+            self.init_command_line_config()
+        else:
+            self.init_config_file_config()
+
+    def init_config_file_config(self):
+        print "using config file"
         conf = Config("config.ini")
         self.pageLimit = conf["pageLimit"]
         self.linkLimit = conf["linkLimit"]
@@ -75,6 +125,7 @@ class FocusedCrawler:
             "filterIrrelevantThreshold": conf["filterIrrelevantThreshold"],
             "filterRelevantThreshold": conf["filterRelevantThreshold"]
         }
+        print "done"
 
     def setup_model(self):
         if self.vsm["on"]:
@@ -85,8 +136,14 @@ class FocusedCrawler:
 
     def setup_labeled_model(self):
         print "Using labels provided by relevant.txt & irrelevant.txt"
-        self.irrelevantDocs = [Webpage(url).save_tmp() for url in self.labeled["irrelevantUrls"] ]
-        self.relevantDocs = [Webpage(url).save_tmp() for url in self.labeled["relevantUrls"] ]
+        if self.labeled["irrelevantUrls"] is not None and len(self.labeled["irrelevantUrls"]) > 0:
+            self.irrelevantDocs = [Webpage(url).save_tmp() for url in self.labeled["irrelevantUrls"] ]
+        else:
+            raise Exception("Irrelevant URLs must be provided for classification")
+        if self.labeled["relevantUrls"] is not None and len(self.labeled["relevantUrls"]) > 0:
+            self.relevantDocs = [Webpage(url).save_tmp() for url in self.labeled["relevantUrls"] ]
+        else:
+            raise Exception("Relevant URLs must be provided for classification")
         print "Found {} relevantDocs & {} irrelevantDocs".format(len(self.relevantDocs), len(self.irrelevantDocs))
 
     def setup_vsm_model(self):
