@@ -2,10 +2,11 @@ import nltk
 from nltk.stem.porter import PorterStemmer
 from nltk.tokenize.regexp import WordPunctTokenizer
 import codecs
-from webpage import Webpage
+from string import punctuation
+#from webpage import Webpage
 
 stemmer = PorterStemmer()
-stopwords = nltk.corpus.stopwords.words('english')
+stopwords = nltk.corpus.stopwords.words('english') + list(punctuation)
 tokenizer = WordPunctTokenizer()
 
 def textsFromFilenames(fileNames):
@@ -33,11 +34,11 @@ def intLinesFromFile(fileName):
 
 def getUrlTexts(urlList):
     """ Lazy returns url texts """
-
-    for url in urlList:
-        page = Webpage(url)
-        #data = tokenizeDocText(page.text)
-        yield page.text
+    # TODO: remove Webpage dependency / remove this function
+    # for url in urlList:
+    #     page = Webpage(url)
+    #     yield page.text
+    return ""
 
 def tokenizeDocText(docText):
         """Given document text, returns list of tokens.
@@ -47,6 +48,6 @@ def tokenizeDocText(docText):
             - reduced to stem (e.g. 'computer' -> 'comput'
         """
         tokens = tokenizer.tokenize(docText)
-        clean = [token.lower() for token in tokens if token.lower() not in stopwords and len(token) > 2]
+        clean = [token.lower() for token in tokens if token.lower() not in stopwords and len(token) > 2 and not token.isdigit()]
         final = [stemmer.stem(word) for word in clean]
         return final
