@@ -1,0 +1,18 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: focused_crawler
+spec:
+  replicas: 2
+  template:
+    metadata:
+      labels: # labels to select/identify the deployment
+        app: focused_crawler
+
+    spec:     # pod spec
+      containers:
+      - name: focused_crawler
+        image: 364276655726.dkr.ecr.us-west-2.amazonaws.com/focused_crawler:latest
+        ports:
+        - containerPort: 80
+        imagePullPolicy: "Always"

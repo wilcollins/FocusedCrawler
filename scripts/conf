@@ -1,0 +1,15 @@
+#!/bin/bash
+DIR (){
+  echo "$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd )"
+}
+PROJECT_ROOT_DIR="$(DIR)/.."
+PROJECT_TMP_DIR="$PROJECT_ROOT_DIR/tmp"
+CONTAINER_ID_FILE="$PROJECT_TMP_DIR/container.id"
+SERVER_DIR="$PROJECT_ROOT_DIR/server"
+
+container_id () {
+  cat "$CONTAINER_ID_FILE"
+}
+
+######## USER CONFIGURATION
+source "$PROJECT_ROOT_DIR/.env"
