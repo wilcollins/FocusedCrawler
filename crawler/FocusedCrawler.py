@@ -50,21 +50,31 @@ class FocusedCrawler:
         self.seedUrls = []
         urlsPerSeed = 10
         for keyword in seeds:
-            if keyword is not "":
+            if keyword is not None and keyword is not "":
                 if "http" in keyword:
                     self.seedUrls.append(keyword)
                 else:
                     seedUrlGenerator = google.search(keyword)
                     searchResultUrls = list(itertools.islice(seedUrlGenerator, 0, urlsPerSeed))
                     self.seedUrls = list(set(self.seedUrls) | set(searchResultUrls))
+            else:
+                raise Exception("Seed is not valid: (" + str(keyword) + ") -- it must be a keyword or URL")
 
         print "seed urls: "
         print self.seedUrls
 
         self.blacklistDomains = conf["blacklist_domains"]
         self.labeled = {}
+
         self.labeled["relevantUrls"] = conf["relevant_urls"]
+        for url in self.labeled["relevantUrls"]:
+            if url is None or url is "":
+                raise Exception("Relevant URL is not valid: (" + str(url) + ")")
+
         self.labeled["irrelevantUrls"] = conf["relevant_urls"]
+        for url in self.labeled["irrelevantUrls"]:
+            if url is None or url is "":
+                raise Exception("Irrelevant URL is not valid: (" + str(url) + ")")
 
         self.vsm = {
             "on": conf["vsm"],
