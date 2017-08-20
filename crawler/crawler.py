@@ -1,5 +1,6 @@
 from bs4 import BeautifulSoup
 from webpage import Webpage
+from tfidfscorer import TfidfScorer
 
 class Crawler:
     def __init__(self, priorityQueue, scorer, pageLimit, linkLimit, relevantThreshold, blacklistDomains):
@@ -28,7 +29,7 @@ class Crawler:
                 print "Crawling page #{} {}".format(self.pageCount(), url_priority_obj)
 
                 page = Webpage(url_priority_obj[1])
-                page_score = self.scorer.calculate_score(page.text)
+                page_score = page.score(self.scorer)
                 if (page_score > self.relevantThreshold):
                     self.relevantPages.append(url_priority_obj)
                     print "Relevant page found. Score ({}) URL ({})".format(page_score, url)
@@ -46,10 +47,12 @@ class Crawler:
                                     print "Checking link #{} {}".format(linked_url_count, linked_url)
                                     linked_page = Webpage(linked_url)
                                     if hasattr(linked_page, "text"):  # webpage was parseable
-                                        linked_url_score = self.scorer.calculate_score(linked_page.text)
+                                        linked_url_score = linked_page.score(self.scorer)
                                         self.totalPagesCount +=1
-                                        tot_score = (page_score + linked_url_score)/2.0
-                                        if tot_score > self.relevantThreshold:
+                                        link_weight = 2
+                                        page_weight = 1
+                                        tot_score = ((page_weight * page_score) + (link_weight * linked_url_score))/2.0
+                                        if tot_score >= self.relevantThreshold:
                                             print "Relevant link found. Score ({}) URL ({})".format(tot_score, linked_url)
                                             self.priorityQueue.push(((-1 * tot_score),linked_url))
                                         else:

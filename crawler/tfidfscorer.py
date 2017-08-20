@@ -40,5 +40,5 @@ if __name__ == "__main__":
     doc = "A human is not a machine, he is an organic"
     #doc = "Human machine interface for lab abc computer applications"
     scorer = TfidfScorer(documents)
-    print scorer.calculateScore(doc)
+    print scorer.calculate_score(doc)
     print scorer.dictionary.values()

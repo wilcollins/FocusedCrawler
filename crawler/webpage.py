@@ -1,12 +1,28 @@
 from bs4 import BeautifulSoup,Comment
 from urllib import FancyURLopener
 import tempfile
+from HTMLParser import HTMLParser
+import utils
 
 from fake_useragent import UserAgent
 ua = UserAgent()
 ua_string = ua.google
 
 import urlparse
+
+class MLStripper(HTMLParser):
+    def __init__(self):
+        self.reset()
+        self.fed = []
+    def handle_data(self, d):
+        self.fed.append(d)
+    def get_data(self):
+        return ''.join(self.fed)
+
+def strip_tags(html):
+    s = MLStripper()
+    s.feed(html)
+    return s.get_data()
 
 class MyOpener(FancyURLopener):
     version = ua_string
@@ -19,11 +35,13 @@ class Webpage:
         self.outgoingUrls = []
 
     def __init__(self,url):
-        self.pageUrl = url
-        self.root_url = urlparse.urljoin(url, '/').strip("/")
-        self.outgoingUrls = []
-        myopener = MyOpener()
-        try:
+        if url is not None and url is not "":
+            if not url.startswith("http"):
+                url = "http://" + url
+            self.pageUrl = url
+            self.root_url = urlparse.urljoin(url, '/').strip("/")
+            self.outgoingUrls = []
+            myopener = MyOpener()
             page = myopener.open(url)
             self.soup = BeautifulSoup(page, "html.parser")
             self.outgoingUrls = self.get_outgoing_urls()
@@ -33,8 +51,12 @@ class Webpage:
             text_nodes = self.soup.findAll(text=True)
             visible_text = filter(visible, text_nodes)
             self.text = ''.join(visible_text)
-        except Exception, e:
-            print e
+            self.text = " ".join(self.text.split())
+            self.text = strip_tags(self.text)
+            self.tokens = utils.tokenizeDocText(self.text)
+            self.tokens = ' '.join(self.tokens)
+        else:
+            raise Exception("Webpage URL is not valid: (" + str(url) + ")")
 
     def get_outgoing_urls(self):
         if self.outgoingUrls == []:
@@ -54,6 +76,9 @@ class Webpage:
     def save(self, path):
         with open(path, "w") as file:
             file.write(str(self.soup))
+
+    def score(self, scorer):
+        return scorer.calculate_score(self.tokens)
 
 def visible(element):
     if element.parent.name in ['style', 'script', '[document]', 'head']:
