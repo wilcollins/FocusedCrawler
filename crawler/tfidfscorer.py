@@ -3,7 +3,7 @@ from scorer import Scorer
 from utils import tokenizeDocText
 
 class TfidfScorer(Scorer):
- 
+
     def __init__(self, docTexts):
         super(TfidfScorer, self).__init__(docTexts)
 

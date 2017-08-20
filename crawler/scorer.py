@@ -4,7 +4,7 @@ from utils import tokenizeDocText
 
 class Scorer(object):
     """ Base class for VSM scorers """
- 
+
     def __init__(self, docTexts):
         self.keywords = []
         self.dictionary = None;
@@ -16,14 +16,14 @@ class Scorer(object):
         """ Given document texts, constructs the VSM and similarity models"""
         return
 
-    
+
     def calculate_score(self,docText):
         """ Given document text, returns relevancy score.
         Document text is tokenized, transformed into vector space,
         and then the maximum dot-product is returned"""
 
         docTokens = tokenizeDocText(docText)
-        
+
         # transform document into model's vector space
         doc_bow = self.dictionary.doc2bow(docTokens)
         vec = self.model[doc_bow]
@@ -35,7 +35,7 @@ class Scorer(object):
 
     def labelDocs(self, docNames, minSize, irrelThresh, relThresh):
         """ Labels a list of documents as relevant (score >= relThresh) or non-relevant (score <= irrelThresh). """
-        
+
         relevantDocNames = []
         irrelevantDocNames = []
         for docName in docNames:
