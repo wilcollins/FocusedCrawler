@@ -24,7 +24,7 @@ class TfidfScorer(Scorer):
         self.model = models.TfidfModel(corpus)
 
         # construct the similarity model
-        self.similarityModel = similarities.MatrixSimilarity(self.model[corpus])
+        self.similarityModel = similarities.MatrixSimilarity(self.model[corpus], num_features=10)
 
 
 if __name__ == "__main__":
